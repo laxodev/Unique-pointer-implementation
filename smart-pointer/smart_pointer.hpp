@@ -59,9 +59,5 @@ public:
 	{
 		return *this->ptr_resource;
 	}
-	unique_ptr& operator=(std::nullptr_t) const noexcept
-	{
-		return *this;
-	}
 	// May be used to check for nullptr
 };
