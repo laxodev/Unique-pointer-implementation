@@ -35,12 +35,12 @@ public:
 		return ptr_resource;
 	}
 	// swaps the resources
-	void swap(const unique_ptr& resource_ptr) noexcept(false)
+	void swap(const unique_ptr& resource_ptr) noexcept
 	{
 		std::swap(ptr_resource, resource_ptr.ptr_resource);
 	}
 	// replaces the resource. the old one is destroyed and a new one will take it's place.
-	void reset(T* resource_ptr) noexcept
+	void reset(T* resource_ptr) noexcept(false)
 	{
 		// ensure a invalid resource is not passed or program will be terminated
 		if (resource_ptr == nullptr)
