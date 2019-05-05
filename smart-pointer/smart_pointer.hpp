@@ -35,19 +35,21 @@ public:
 		return ptr_resource;
 	}
 	// swaps the resources
-	void swap(const unique_ptr& resource_ptr) noexcept
+	void swap(const unique_ptr& resource_ptr) noexcept(false)
 	{
 		std::swap(ptr_resource, resource_ptr.ptr_resource);
 	}
 	// replaces the resource. the old one is destroyed and a new one will take it's place.
-	void reset(T* resource_ptr) noexcept(false)
+	void reset(T* resource_ptr) noexcept
 	{
 		// ensure a invalid resource is not passed or program will be terminated
 		if (resource_ptr == nullptr)
 			throw std::invalid_argument("An invalid pointer was passed, resources will not be swapped");
 
-		delete ptr_resource;
-		std::swap(resource_ptr, ptr_resource);
+		delete this->ptr_resource;
+		this->ptr_resource = nullptr;
+
+		this->ptr_resource = resource_ptr;
 	}
 public:
 	// overloaded operators
@@ -55,7 +57,7 @@ public:
 	{
 		return this->ptr_resource;
 	}
-	T* operator*() const noexcept
+	T& operator*() const noexcept
 	{
 		return *this->ptr_resource;
 	}
