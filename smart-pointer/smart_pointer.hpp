@@ -1,5 +1,4 @@
-#include <memory>
-#include <cassert>
+#include <algorithm>
 
 template<typename T>
 class unique_ptr
@@ -40,16 +39,17 @@ public:
 		std::swap(ptr_resource, resource_ptr.ptr_resource);
 	}
 	// replaces the resource. the old one is destroyed and a new one will take it's place.
-	void reset(T* resource_ptr) noexcept
+	void reset(T* resource_ptr) noexcept(false)
 	{
 		// ensure a invalid resource is not passed or program will be terminated
 		if (resource_ptr == nullptr)
 			throw std::invalid_argument("An invalid pointer was passed, resources will not be swapped");
 
-		delete this->ptr_resource;
-		this->ptr_resource = nullptr;
+		delete ptr_resource;
 
-		this->ptr_resource = resource_ptr;
+		ptr_resource = nullptr;
+
+		std::swap(ptr_resource, resource_ptr);
 	}
 public:
 	// overloaded operators
