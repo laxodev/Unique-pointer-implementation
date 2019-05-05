@@ -52,7 +52,7 @@ public:
 		std::swap(ptr_resource, resource_ptr);
 	}
 public:
-	// overloaded operators
+	// operators
 	T* operator->() const noexcept
 	{
 		return this->ptr_resource;
