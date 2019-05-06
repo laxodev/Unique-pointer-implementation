@@ -1,5 +1,3 @@
-#include <algorithm>
-
 template<typename T>
 class unique_ptr
 {
@@ -11,6 +9,8 @@ public:
 	explicit unique_ptr(T* raw_resource) noexcept : ptr_resource(std::move(raw_resource)) {}
 	unique_ptr(std::nullptr_t) : ptr_resource(nullptr) {}
 
+	unique_ptr() noexcept : ptr_resource(nullptr) {}
+
 	// destroys the resource when object goes out of scope
 	~unique_ptr() noexcept
 	{
@@ -20,13 +20,14 @@ public:
 	unique_ptr(const unique_ptr<T>&) noexcept = delete;
 	unique_ptr& operator = (const unique_ptr&) noexcept = delete;
 public:
+	explicit operator bool() const noexcept
+	{
+		return this->ptr_resource;
+	}
 	// releases the ownership of the resource. The user is now responsible for memory clean-up.
 	T* release() noexcept
 	{
-		T* resource_ptr = this->ptr_resource;
-		this->ptr_resource = nullptr;
-
-		return resource_ptr;
+		return std::exchange(ptr_resource, nullptr);
 	}
 	// returns a pointer to the resource
 	T* get() const noexcept
@@ -34,7 +35,7 @@ public:
 		return ptr_resource;
 	}
 	// swaps the resources
-	void swap(unique_ptr<T>& resource_ptr) noexcept
+	void swap(unique_ptr<T>& resource_ptr) noexcept(false)
 	{
 		std::swap(ptr_resource, resource_ptr.ptr_resource);
 	}
@@ -52,7 +53,7 @@ public:
 		std::swap(ptr_resource, resource_ptr);
 	}
 public:
-	// operators
+	// overloaded operators
 	T* operator->() const noexcept
 	{
 		return this->ptr_resource;
