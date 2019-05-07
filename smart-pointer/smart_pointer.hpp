@@ -60,7 +60,7 @@ public:
 		return ptr_resource;
 	}
 	// swaps the resources
-	void swap(unique_ptr<T>& resource_ptr) noexcept
+	void swap(unique_ptr<T, deleter>& resource_ptr) noexcept
 	{
 		std::swap(ptr_resource, resource_ptr.ptr_resource);
 	}
