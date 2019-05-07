@@ -1,10 +1,21 @@
 #include <utility>
 
 template<typename T>
+struct unique_ptr_deleter
+{
+	void operator()(T* resource) const
+	{
+		delete resource;
+	}
+};
+
+// Takes in a default deleter. unique_ptr_deleters operator will be invoked by default.
+template<typename T, typename deleter = unique_ptr_deleter<T>>
 class unique_ptr
 {
 private:
 	T * ptr_resource = nullptr;
+	deleter operator_delete;
 public:
 	// Safely constructs resource. Operator new is called by the user. Once constructed the unique_ptr will own the resource.
 	// std::move is used because it is used to indicate that an object may be moved from other resource.
@@ -13,15 +24,27 @@ public:
 
 	unique_ptr() noexcept : ptr_resource(nullptr) {}
 
-	// destroys the resource when object goes out of scope
+	// destroys the resource when object goes out of scope. This will either call the default delete operator or a user-defined one.
 	~unique_ptr() noexcept
 	{
-		delete ptr_resource;
+		operator_delete(ptr_resource);
 	}
 	// Disables the copy/ctor and copy assignment operator. We cannot have two copies exist or it'll bypass the RAII concept.
 	unique_ptr(const unique_ptr<T>&) noexcept = delete;
 	unique_ptr& operator = (const unique_ptr&) noexcept = delete;
+	
 public:
+	// Allows move-semantics. While the unique_ptr cannot be copied it can be safely moved. 
+	unique_ptr(unique_ptr&& move) noexcept
+	{
+		move.swap(*this);
+	}
+	// ptr = std::move(resource)
+	unique_ptr& operator=(unique_ptr&& move) noexcept
+	{
+		move.swap(*this);
+		return *this;
+	}
 	explicit operator bool() const noexcept
 	{
 		return this->ptr_resource;
@@ -37,7 +60,7 @@ public:
 		return ptr_resource;
 	}
 	// swaps the resources
-	void swap(unique_ptr<T>& resource_ptr) noexcept(false)
+	void swap(unique_ptr<T>& resource_ptr) noexcept
 	{
 		std::swap(ptr_resource, resource_ptr.ptr_resource);
 	}
@@ -48,7 +71,7 @@ public:
 		if (resource_ptr == nullptr)
 			throw std::invalid_argument("An invalid pointer was passed, resources will not be swapped");
 
-		delete ptr_resource;
+		operator_delete(ptr_resource);
 
 		ptr_resource = nullptr;
 
@@ -56,7 +79,7 @@ public:
 	}
 public:
 	// overloaded operators
-	T* operator->() const noexcept
+	T * operator->() const noexcept
 	{
 		return this->ptr_resource;
 	}
